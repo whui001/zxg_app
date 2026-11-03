@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: zhixuangu
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python server.py
+    region: singapore
+    plan: free
+    healthCheckPath: /api/health

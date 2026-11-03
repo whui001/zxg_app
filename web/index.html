@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#080b10">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="智选股">
+<meta name="mobile-web-app-capable" content="yes">
+<title>智选股 · 技术面选股与 BS 点位助手</title>
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="./icons/icon-192.png">
+<link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner wrap">
+    <div class="brand">
+      <div class="logo">智</div>
+      <div class="brand-text">
+        <h1>智选股</h1>
+        <p>技术面选股 · 走势诊断 · BS 点位</p>
+      </div>
+    </div>
+
+    <div class="index-strip" id="indices">
+      <div class="index-chip skeleton"></div>
+      <div class="index-chip skeleton"></div>
+      <div class="index-chip skeleton"></div>
+    </div>
+
+    <div class="search-box">
+      <input id="searchInput" type="search" placeholder="搜索代码 / 名称，如 600519、宁德时代" autocomplete="off">
+      <span class="search-icon">⌕</span>
+      <div class="search-drop hidden" id="searchDrop"></div>
+    </div>
+
+    <div class="top-actions">
+      <span class="clock" id="clock">--:--</span>
+      <button class="icon-btn" id="refreshBtn" title="刷新行情">↻</button>
+    </div>
+  </div>
+
+  <nav class="tabs wrap">
+    <button class="tab is-active" data-view="recommend">今日荐股</button>
+    <button class="tab" data-view="watch">自选 <em id="watchCount">0</em></button>
+    <button class="tab" data-view="positions">持仓诊断 <em id="posCount">0</em></button>
+  </nav>
+</header>
+
+<main class="wrap main">
+  <!-- 荐股 -->
+  <section class="view" id="view-recommend">
+    <div class="view-head">
+      <div>
+        <h2>今日荐股</h2>
+        <p id="recNote">从流动性靠前的 A 股中筛选：趋势、MACD、RSI、量能、位置五维打分，并按行业去重。</p>
+      </div>
+      <div class="head-actions">
+        <span class="scan-info" id="scanInfo"></span>
+        <button class="btn ghost" id="recRefresh">重新扫描</button>
+      </div>
+    </div>
+    <div class="grid" id="recGrid">
+      <div class="loading-card skeleton"></div>
+      <div class="loading-card skeleton"></div>
+      <div class="loading-card skeleton"></div>
+    </div>
+  </section>
+
+  <!-- 自选 -->
+  <section class="view hidden" id="view-watch">
+    <div class="view-head">
+      <div>
+        <h2>自选股</h2>
+        <p>行情每 30 秒自动刷新；点「走势」进入个股 K 线与 BS 计划。</p>
+      </div>
+      <div class="head-actions">
+        <button class="btn ghost" id="watchRefresh">刷新行情</button>
+      </div>
+    </div>
+    <div class="panel table-panel">
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>股票</th><th class="num">现价</th><th class="num">涨跌幅</th>
+            <th class="num">昨收</th><th class="num">成交额</th><th class="num">操作</th>
+          </tr>
+        </thead>
+        <tbody id="watchBody"></tbody>
+      </table>
+      <div class="empty hidden" id="watchEmpty">
+        <div class="empty-icon">☆</div>
+        <p>自选股还是空的</p>
+        <span>用顶部搜索框找到股票，进入详情后点「加自选」</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 持仓 -->
+  <section class="view hidden" id="view-positions">
+    <div class="view-head">
+      <div>
+        <h2>持仓诊断</h2>
+        <p>记录你的买入价和数量，自动计算盈亏，并按走势给出持有 / 加仓 / 减仓 / 止损建议。</p>
+      </div>
+      <div class="head-actions">
+        <button class="btn ghost" id="posRefresh">刷新诊断</button>
+        <button class="btn primary" id="addPosBtn">+ 记录买入</button>
+      </div>
+    </div>
+    <div class="stat-row" id="posSummary"></div>
+    <div class="panel table-panel">
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>股票</th><th class="num">成本 / 现价</th><th class="num">数量</th>
+            <th class="num">浮动盈亏</th><th>走势</th><th>建议 / 止损</th><th class="num">操作</th>
+          </tr>
+        </thead>
+        <tbody id="posBody"></tbody>
+      </table>
+      <div class="empty hidden" id="posEmpty">
+        <div class="empty-icon">＋</div>
+        <p>还没有记录持仓</p>
+        <span>点击右上角「记录买入」，或用个股页的「记录买入」按钮</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 个股详情 -->
+  <section class="view hidden" id="view-detail">
+    <div class="detail-head">
+      <button class="btn ghost" id="backBtn">← 返回</button>
+      <div class="detail-title" id="detailTitle"></div>
+      <div class="detail-actions">
+        <button class="btn ghost" id="watchToggle">☆ 加自选</button>
+        <button class="btn primary" id="buyBtn">记录买入</button>
+      </div>
+    </div>
+
+    <div class="detail-grid">
+      <div class="panel chart-panel">
+        <div class="chart-bar">
+          <div class="chart-tabs" id="kltTabs">
+            <button class="chart-tab" data-klt="0">分时 <span class="rt-dot" id="rtDot"></span></button>
+            <button class="chart-tab is-active" data-klt="101">日 K</button>
+            <button class="chart-tab" data-klt="102">周 K</button>
+            <button class="chart-tab" data-klt="60">60 分钟</button>
+          </div>
+          <div class="chart-legend" id="chartLegend">
+            <span><i style="background:#e8edf5"></i>MA5</span>
+            <span><i style="background:#f5b942"></i>MA10</span>
+            <span><i style="background:#4d8dff"></i>MA20</span>
+            <span><i style="background:#b06bff"></i>MA60</span>
+            <span><i class="dot up"></i>B 买点</span>
+            <span><i class="dot down"></i>S 卖点</span>
+          </div>
+          <div class="chart-legend hidden" id="intradayLegend">
+            <span><i style="background:#4d8dff"></i>价格</span>
+            <span><i style="background:#f5b942"></i>均价</span>
+            <span><i style="background:#8ea0b8"></i>昨收</span>
+            <span><i class="bar up"></i>上涨量</span>
+            <span><i class="bar down"></i>下跌量</span>
+          </div>
+        </div>
+        <div class="chart-wrap" id="chartWrap">
+          <canvas id="chart"></canvas>
+          <div class="chart-tip hidden" id="chartTip"></div>
+          <div class="chart-empty hidden" id="chartEmpty">加载 K 线中…</div>
+        </div>
+      </div>
+
+      <aside class="side">
+        <div class="panel" id="planBox">
+          <div class="skeleton h180"></div>
+        </div>
+        <div class="panel" id="reasonBox"></div>
+        <div class="panel" id="signalBox"></div>
+      </aside>
+    </div>
+  </section>
+
+  <div class="disclaimer">
+    数据来自东方财富公开行情接口。本工具为技术面研究辅助，所有打分与 B/S 点位均由规则引擎生成，不构成任何投资建议。
+  </div>
+</main>
+
+<!-- 记录买入弹窗 -->
+<div class="modal hidden" id="modal">
+  <div class="modal-box">
+    <h3 id="modalTitle">记录买入</h3>
+    <div class="modal-stock" id="modalStock"></div>
+    <div class="modal-search" id="modalSearchWrap">
+      <input id="modalSearch" type="search" placeholder="搜索股票代码 / 名称" autocomplete="off">
+      <div class="search-drop hidden" id="modalSearchDrop"></div>
+    </div>
+    <div class="field-row">
+      <label>买入价
+        <input id="mCost" type="number" step="0.01" min="0" placeholder="成交价">
+      </label>
+      <label>数量（股）
+        <input id="mQty" type="number" step="1" min="1" value="100">
+      </label>
+    </div>
+    <p class="modal-hint" id="modalHint">用于本地模拟持仓，数据只保存在本机浏览器。</p>
+    <div class="modal-actions">
+      <button class="btn ghost" id="modalCancel">取消</button>
+      <button class="btn primary" id="modalOk">确认买入</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast hidden" id="toast"></div>
+<script src="/app.js"></script>
+</body>
+</html>

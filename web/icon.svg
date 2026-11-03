@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#4d8dff"/>
+      <stop offset="100%" stop-color="#8a5bff"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="96" fill="#0a0e17"/>
+  <rect x="40" y="40" width="432" height="432" rx="84" fill="url(#g)" opacity=".18"/>
+  <path d="M120 340 L200 260 L250 300 L340 180 L400 230" stroke="url(#g)" stroke-width="18" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="120" cy="340" r="14" fill="#4d8dff"/>
+  <circle cx="200" cy="260" r="14" fill="#4d8dff"/>
+  <circle cx="250" cy="300" r="14" fill="#4d8dff"/>
+  <circle cx="340" cy="180" r="14" fill="#f5b942"/>
+  <circle cx="400" cy="230" r="14" fill="#f5b942"/>
+  <rect x="80" y="380" width="352" height="6" rx="3" fill="#8a5bff" opacity=".4"/>
+  <text x="256" y="440" font-family="PingFang SC, Microsoft YaHei, system-ui" font-size="40" font-weight="700" fill="#8a9db8" text-anchor="middle" opacity=".7">智选股</text>
+</svg>
